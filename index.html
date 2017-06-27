@@ -7,6 +7,405 @@
 
 <BR><BR><BR><BR><BR><BR><BR><BR><BR><BR>
 <a href="/REZA.txt" download><h1 align="center">O ULTIMO SENAI</h1></a>
+<!--
+package Senai;
 
+import java.awt.EventQueue;
+
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.SwingConstants;
+import javax.swing.JTextField;
+import javax.swing.JRadioButton;
+import javax.swing.ButtonGroup;
+import javax.swing.JButton;
+import javax.swing.JSeparator;
+import java.awt.Font;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.awt.Color;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+
+public class Mesada {
+
+	private JFrame frmControleDeMesada;
+	private JTextField tfDescricao;
+	private JTextField tfValor;
+	private JRadioButton rbEntrada;
+	private JRadioButton rbSaida;
+	private JLabel lblTotal;
+	private JLabel lblDescricao;
+	private JLabel lblValor;
+	private JLabel lblOperacao;
+	private JButton btnVoltar;
+	private JButton btnSelecionar;
+	private JButton btnAvancar;
+	private JButton btnAlterar;
+	private JButton btnRemover;
+	private JButton btnSalvar;
+	float valor;
+	int operacao;
+	String descricao;
+	
+	
+	
+	Connection conexao;
+	ResultSet dados1,dados2;
+    int id;
+
+	/**
+	 * Launch the application.
+	 */
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					Mesada window = new Mesada();
+					window.frmControleDeMesada.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+
+	/**
+	 * Create the application.
+	 */
+	public Mesada() {
+		initialize();
+	}
+	
+
+	/**
+	 * Initialize the contents of the frame.
+	 */
+	private void initialize() {
+		frmControleDeMesada = new JFrame();
+		frmControleDeMesada.setTitle("Controle de Mesada ");
+		frmControleDeMesada.setBounds(100, 100, 450, 424);
+		frmControleDeMesada.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frmControleDeMesada.getContentPane().setLayout(null);
+		frmControleDeMesada.setLocationRelativeTo(null);
+		
+		JLabel lblNewLabel = new JLabel("Cadastro de Mesada");
+		lblNewLabel.setForeground(Color.BLUE);
+		lblNewLabel.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		lblNewLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		lblNewLabel.setBounds(10, 8, 414, 20);
+		frmControleDeMesada.getContentPane().add(lblNewLabel);
+		
+		JLabel lblDescricao1 = new JLabel("Descri\u00E7\u00E3o: ");
+		lblDescricao1.setBounds(10, 36, 74, 14);
+		frmControleDeMesada.getContentPane().add(lblDescricao1);
+		
+		tfDescricao = new JTextField();
+		tfDescricao.setBounds(78, 33, 346, 20);
+		frmControleDeMesada.getContentPane().add(tfDescricao);
+		tfDescricao.setColumns(10);
+		
+		JLabel lblValor1 = new JLabel("Valor: ");
+		lblValor1.setBounds(10, 61, 40, 14);
+		frmControleDeMesada.getContentPane().add(lblValor1);
+		
+		tfValor = new JTextField();
+		tfValor.setColumns(10);
+		tfValor.setBounds(47, 58, 110, 20);
+		frmControleDeMesada.getContentPane().add(tfValor);
+		
+		rbEntrada = new JRadioButton("Entrada");
+		rbEntrada.setSelected(true);
+		rbEntrada.setBounds(167, 57, 74, 23);
+		frmControleDeMesada.getContentPane().add(rbEntrada);
+		
+		rbSaida = new JRadioButton("Sa\u00EDda");
+		rbSaida.setBounds(243, 57, 59, 23);
+		frmControleDeMesada.getContentPane().add(rbSaida);
+		
+		btnSalvar = new JButton("SALVAR");
+		btnSalvar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+					String desc = tfDescricao.getText();
+					float valo = Float.parseFloat(tfValor.getText().toString());
+					int ope = 1;
+					if(rbEntrada.isSelected()){
+						ope = 1;
+					}if(rbSaida.isSelected()){
+							ope = 0;
+							valo = valo * -1;
+						}
+						String sql = "INSERT INTO mesada (descricao,valor,operacao) VALUES (?,?,?)";
+						try {
+							PreparedStatement stmt = conexao.prepareStatement(sql);
+							stmt.setString(1, desc);
+							stmt.setFloat(2, valo);
+							stmt.setInt(3, ope);
+							stmt.execute();
+							stmt.close();
+							JOptionPane.showMessageDialog(null,"CADASTRADO COM SEUCESSO");
+							atualizarMesa();
+							atualizaDad();
+						} catch (SQLException e) {
+							e.printStackTrace();
+							JOptionPane.showMessageDialog(null,"ERRO AO CADASTRAR");
+						}
+						tfValor.setText(null);
+						tfDescricao.setText(null);
+						rbEntrada.setSelected(true);
+			}
+		});
+		btnSalvar.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		btnSalvar.setBounds(306, 57, 118, 23);
+		frmControleDeMesada.getContentPane().add(btnSalvar);
+		
+		JSeparator separator = new JSeparator();
+		separator.setBounds(10, 86, 414, 2);
+		frmControleDeMesada.getContentPane().add(separator);
+		
+		JSeparator separator_1 = new JSeparator();
+		separator_1.setBounds(10, 162, 414, 2);
+		frmControleDeMesada.getContentPane().add(separator_1);
+		
+		lblTotal = new JLabel("0");
+		lblTotal.setForeground(Color.BLUE);
+		lblTotal.setFont(new Font("Tahoma", Font.PLAIN, 60));
+		lblTotal.setBounds(187, 92, 237, 72);
+		frmControleDeMesada.getContentPane().add(lblTotal);
+		
+		JLabel lblRs = new JLabel("R$");
+		lblRs.setHorizontalAlignment(SwingConstants.RIGHT);
+		lblRs.setFont(new Font("Tahoma", Font.PLAIN, 60));
+		lblRs.setBounds(69, 89, 107, 72);
+		frmControleDeMesada.getContentPane().add(lblRs);
+		
+		JLabel lblEntradaESadas = new JLabel("Entrada e Sa\u00EDdas");
+		lblEntradaESadas.setHorizontalAlignment(SwingConstants.CENTER);
+		lblEntradaESadas.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		lblEntradaESadas.setBounds(10, 170, 414, 20);
+		frmControleDeMesada.getContentPane().add(lblEntradaESadas);
+		
+		JLabel lblDescricaoSelect = new JLabel("Descri\u00E7\u00E3o: ");
+		lblDescricaoSelect.setFont(new Font("Tahoma", Font.PLAIN, 16));
+		lblDescricaoSelect.setBounds(10, 193, 83, 14);
+		frmControleDeMesada.getContentPane().add(lblDescricaoSelect);
+		
+		JLabel lblValorSelect = new JLabel("Valor:");
+		lblValorSelect.setFont(new Font("Tahoma", Font.PLAIN, 16));
+		lblValorSelect.setBounds(10, 217, 51, 14);
+		frmControleDeMesada.getContentPane().add(lblValorSelect);
+		
+		JLabel lblOperaoSelect = new JLabel("Opera\u00E7\u00E3o:");
+		lblOperaoSelect.setFont(new Font("Tahoma", Font.PLAIN, 16));
+		lblOperaoSelect.setBounds(10, 240, 83, 14);
+		frmControleDeMesada.getContentPane().add(lblOperaoSelect);
+		
+		lblDescricao = new JLabel("Vazio");
+		lblDescricao.setForeground(Color.BLUE);
+		lblDescricao.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		lblDescricao.setBounds(87, 195, 337, 14);
+		frmControleDeMesada.getContentPane().add(lblDescricao);
+		
+		lblValor = new JLabel("0,00");
+		lblValor.setForeground(Color.BLUE);
+		lblValor.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		lblValor.setBounds(57, 218, 91, 14);
+		frmControleDeMesada.getContentPane().add(lblValor);
+		
+		lblOperacao = new JLabel("Vazio");
+		lblOperacao.setForeground(Color.BLUE);
+		lblOperacao.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		lblOperacao.setBounds(87, 242, 118, 14);
+		frmControleDeMesada.getContentPane().add(lblOperacao);
+		
+		btnVoltar = new JButton("VOLTAR");
+		btnVoltar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				try {if(dados2.previous()){
+						lblDescricao.setText(dados2.getString("descricao"));
+						float valo = dados2.getFloat("valor");
+						int ope = dados2.getInt("operacao");
+						if(ope==0){
+							lblOperacao.setText("SAIDA");valo = valo * -1;lblValor.setText(String.valueOf(valo));
+						}else{lblOperacao.setText("ENTRADA");lblValor.setText(String.valueOf(valo));}
+					}else{
+						dados2.first();}
+				} catch (SQLException e) {e.printStackTrace();}
+		
+			}
+		});
+		btnVoltar.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		btnVoltar.setBounds(10, 263, 125, 35);
+		frmControleDeMesada.getContentPane().add(btnVoltar);
+		
+		btnAvancar = new JButton("AVAN\u00C7AR");
+		btnAvancar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				try {if(dados2.next()){
+						lblDescricao.setText(dados2.getString("descricao"));
+						float valo = dados2.getFloat("valor");
+						int ope = dados2.getInt("operacao");
+						if(ope==0){lblOperacao.setText("SAIDA");valor = valor * -1;lblValor.setText(String.valueOf(valo));
+						}else{lblOperacao.setText("ENTRADA");lblValor.setText(String.valueOf(valo));}
+					}else{dados2.last();}
+				} catch (SQLException e) {
+					e.printStackTrace();}
+			}
+		});
+		btnAvancar.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		btnAvancar.setBounds(299, 263, 125, 35);
+		frmControleDeMesada.getContentPane().add(btnAvancar);
+		
+		btnSelecionar = new JButton("SELECIONAR");
+		btnSelecionar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				btnAlterar.setEnabled(true);
+				btnRemover.setEnabled(true);
+				try {
+					tfDescricao.setText(dados2.getString("descricao"));
+					float valo = dados2.getFloat("valor");
+					int ope = dados2.getInt("operacao");
+					if(ope==0){
+						valo = valo * -1;
+						tfValor.setText(String.valueOf(valo));
+						rbSaida.setSelected(true);
+					}else{
+						tfValor.setText(String.valueOf(valo));
+					}
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+			
+		});
+		btnSelecionar.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		btnSelecionar.setBounds(142, 263, 150, 35);
+		frmControleDeMesada.getContentPane().add(btnSelecionar);
+		
+		btnAlterar = new JButton("ALTERAR");
+		btnAlterar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				 
+			}
+				
+		});
+		btnAlterar.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		btnAlterar.setBounds(10, 303, 414, 35);
+		frmControleDeMesada.getContentPane().add(btnAlterar);
+		
+		btnRemover = new JButton("REMOVER");
+		btnRemover.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				
+				String sql = "DELETE FROM mesada WHERE id = " + id;
+
+				try {
+					PreparedStatement stmt = conexao.prepareStatement(sql);
+					stmt.execute();
+					if(!(dados2.next())){
+						lblOperacao.setText("Vazio");
+						lblValor.setText("Vazio");
+						lblDescricao.setText("Vazio");
+					}atualizaDad();
+					atualizarMesa();
+					JOptionPane.showMessageDialog(null, "DELETADO");
+				} catch (SQLException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+					JOptionPane.showMessageDialog(null, "ERRO");
+				}}
+		});
+		btnRemover.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		btnRemover.setBounds(10, 342, 414, 35);
+		frmControleDeMesada.getContentPane().add(btnRemover);
+		
+		ButtonGroup bg = new ButtonGroup();
+		bg.add(rbEntrada);
+		bg.add(rbSaida);
+		
+		conectar(); //chama o método conectar
+		atualizarMesa();
+		atualizaDad();
+	}//fim do método initialize
+	
+	public void conectar(){
+		try {
+			conexao = DriverManager.getConnection("jdbc:mysql://localhost:3306/mesada","root","root");
+		} catch (SQLException e) {
+			JOptionPane.showMessageDialog(null,"Erro ao conectar-se banco de dados!");
+			e.printStackTrace();
+		}
+	}//fim do conectar
+	public void atualizarMesa(){
+		String sql = "SELECT * FROM mesada";
+		try {
+			PreparedStatement stmt = conexao.prepareStatement(sql);
+			dados1 = stmt.executeQuery();
+			stmt.execute();
+			stmt.close();
+			float valo = 0;
+			while(dados1.next()){
+				valo = valo + dados1.getFloat("valor");
+			}
+			lblTotal.setText(String.valueOf(valo));
+			if(dados1.first()){
+				btnVoltar.setEnabled(true);
+				btnSelecionar.setEnabled(true);
+				btnAvancar.setEnabled(true);
+			
+			}else{
+				btnVoltar.setEnabled(false);
+				btnSelecionar.setEnabled(false);
+				btnAvancar.setEnabled(false);
+			
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		btnRemover.setEnabled(false);
+		btnAlterar.setEnabled(false);
+		tfDescricao.setText(null);
+		rbEntrada.setSelected(true);
+	}
+		
+	public void atualizaDad(){
+		String sql = "SELECT * FROM mesada";
+		try {
+			PreparedStatement stmt = conexao.prepareStatement(sql);
+			dados2 = stmt.executeQuery();
+			stmt.execute();
+			stmt.close();
+			if(dados2.last()){
+				lblDescricao.setText(dados2.getString("descricao"));
+				float valo = dados2.getFloat("valor");
+				int ope = dados2.getInt("operacao");
+				if(ope==0){
+					lblOperacao.setText("Saida");
+					valor = valor * -1;
+					lblValor.setText(String.valueOf(valo));
+				}else{
+					lblOperacao.setText("Entrada");
+					lblValor.setText(String.valueOf(valo));
+
+				}
+				id = dados2.getInt("id");
+			}else{
+				lblDescricao.setText("VAZIO");
+				lblValor.setText("VAZIO");
+				lblOperacao.setText("vazio");
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+	}
+}//fim da classe
+
+-->
 </body>
 </html>
